@@ -7,7 +7,7 @@ import re, io, os
 class Subject:
     def __init__(self):
         self.class_num = 1771
-        self.vocab_size = 84037
+        self.vocab_size = 100266
 
     def get_label_dict(self, path='data/subject_node.txt'):
         label_dict = []
@@ -59,7 +59,7 @@ class Subject:
         all_data = []
         for content in data:
             if content:
-                self.remove_html_tag(content)
+                content = self.remove_html_tag(content)
                 content = re.sub('[().,;:]', '', content)
                 words = content.split(' ')
                 all_data.extend(words)
@@ -72,13 +72,13 @@ class Subject:
         # add a tag <PAD> to make all the text the same length
         words = ['<PAD>'] + list(words)
         print(len(words))
-        vocab = []
-        for word in words:
-            if re.match('.*<.*>.*',word) or ('=' in word):
-                continue
-            vocab += [word]
-        print(len(vocab))
-        io.open('data/vocab.txt', 'w').write('\n'.join(vocab))
+        # vocab = []
+        # for word in words:
+        #     if re.match('.*<.*>.*',word) or ('=' in word):
+        #         continue
+        #     vocab += [word]
+        # print(len(vocab))
+        io.open('data/vocab.txt', 'w').write('\n'.join(words))
 
 
     def read_file(self, filename):
@@ -93,7 +93,7 @@ class Subject:
             for line in f.readlines():
                 try:
                     label, content = line.strip().split('\t')
-                    content = re.sub('[().,]', '', content)
+                    content = re.sub('[().,;:]', '', content)
                     contents.append(content.split(' '))
                     labels.append(label.split(','))
                 except:
