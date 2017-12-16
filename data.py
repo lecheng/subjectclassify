@@ -53,12 +53,13 @@ class Subject:
         f_test.close()
         f_val.close()
 
-    def build_vocal(self, data, vocab_size=10000):
+    def build_vocal(self, data, vocab_size=100000):
         data = list(data['abstract'])
         print len(data)
         all_data = []
         for content in data:
             if content:
+                self.remove_html_tag(content)
                 content = re.sub('[().,]', '', content)
                 words = content.split(' ')
                 all_data.extend(words)
