@@ -7,7 +7,7 @@ import re, io, os
 class Subject:
     def __init__(self):
         self.class_num = 1771
-        self.vocab_size = 10000
+        self.vocab_size = 100000
 
     def get_label_dict(self, path='data/subject_node.txt'):
         label_dict = []
