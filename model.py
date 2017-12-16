@@ -51,13 +51,13 @@ class TextClassificationCNN(object):
         gmp = tf.reshape(gmp, [-1, total_features])
         self.logger.info('gmp shape {0}'.format(gmp.shape))
 
-        fc1 = tf.contrib.layers.fully_connected(gmp, self.config.hidden_dim)
-        # fc1 = tf.contrib.layers.fully_connected(gmp, self.config.class_num, activation_fn=None)
+        # fc1 = tf.contrib.layers.fully_connected(gmp, self.config.hidden_dim)
+        fc1 = tf.contrib.layers.fully_connected(gmp, self.config.class_num, activation_fn=None)
         # if self.is_train:
         #     fc1 = tf.contrib.layers.dropout(fc1, self.keep_prob)
         self.logger.info('fc1 shape {0}'.format(fc1.shape))
-        # self.logits = fc1
-        self.logits = tf.contrib.layers.fully_connected(fc1, self.config.class_num, activation_fn=None)
+        self.logits = fc1
+        # self.logits = tf.contrib.layers.fully_connected(fc1, self.config.class_num, activation_fn=None)
         self.logger.info('logits shape {0}'.format(self.logits.shape))
         # self.predict_y = tf.argmax(self.logits,1,output_type=tf.int32)
         # self.predict_y = tf.round(tf.nn.sigmoid(self.logits))
