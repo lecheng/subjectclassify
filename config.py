@@ -26,12 +26,12 @@ class TCCNNConfig(object):
     embedding_size = 300
     class_num = 1771
     vocab_size = 100000
-    epochs = 24
+    epochs = 120
     filters_num = 256
     features_each_filter = 10
     hidden_dim = 128
     text_length = 300
-    batch_size = 128
+    batch_size = 256
     keep_prob = 1.0
     data_dir = BasicConfig.DATA_ROOT + '/'
     checkpoints_dir = BasicConfig.CHECKPOINTS_ROOT + '/'
