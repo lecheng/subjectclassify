@@ -23,7 +23,7 @@ class TCCNNConfig(object):
     k = 2
     threshold = 0.6
     learning_rate = 1e-3
-    embedding_size = 1000
+    embedding_size = 300
     class_num = 1771
     vocab_size = 100000
     epochs = 24

@@ -7,7 +7,7 @@ import re, io, os
 class Subject:
     def __init__(self):
         self.class_num = 1771
-        self.vocab_size = 100000
+        self.vocab_size = 84037
 
     def get_label_dict(self, path='data/subject_node.txt'):
         label_dict = []
@@ -60,7 +60,7 @@ class Subject:
         for content in data:
             if content:
                 self.remove_html_tag(content)
-                content = re.sub('[().,]', '', content)
+                content = re.sub('[().,;:]', '', content)
                 words = content.split(' ')
                 all_data.extend(words)
         print len(all_data)
@@ -72,8 +72,13 @@ class Subject:
         # add a tag <PAD> to make all the text the same length
         words = ['<PAD>'] + list(words)
         print(len(words))
-
-        io.open('data/vocab.txt', 'w').write('\n'.join(words))
+        vocab = []
+        for word in words:
+            if re.match('.*<.*>.*',word) or ('=' in word):
+                continue
+            vocab += [word]
+        print(len(vocab))
+        io.open('data/vocab.txt', 'w').write('\n'.join(vocab))
 
 
     def read_file(self, filename):
