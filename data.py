@@ -71,6 +71,7 @@ class Subject:
         words, _ = list(zip(*count_pairs))
         # add a tag <PAD> to make all the text the same length
         words = ['<PAD>'] + list(words)
+        print(len(words))
 
         io.open('data/vocab.txt', 'w').write('\n'.join(words))
 
