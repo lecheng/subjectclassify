@@ -138,10 +138,10 @@ class TextClassificationCNN(object):
                                     self.keep_prob: self.config.keep_prob, self.thre: self.config.threshold})
                     self.logger.info('Epoch: {0}, iteration: {1}, training loss: {2}, training accuracy: {3}, precision: {4}, recall: {5}, total label num: {6}, '
                                      .format(epoch, i, loss, accuracy, a, b, c))
+                self.logger.info('start evaluating epoch {0}...'.format(epoch))
+                self.evaluate(sess)
                 if (epoch+1) % 6 == 0:
                     saver.save(sess, self.config.model_dir, global_step= epoch)
-                    self.logger.info('start evaluating epoch {0}...'.format(epoch))
-                    self.evaluate(sess)
         except KeyboardInterrupt:
             self.logger.error('Interrupt manually, try saving checkpoint for now...')
             print self.config.model_dir
