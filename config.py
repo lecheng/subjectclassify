@@ -32,7 +32,7 @@ class TCCNNConfig(object):
     hidden_dim = 128
     text_length = 300
     batch_size = 256
-    keep_prob = 1.0
+    keep_prob = 0.8
     data_dir = BasicConfig.DATA_ROOT + '/'
     checkpoints_dir = BasicConfig.CHECKPOINTS_ROOT + '/'
     model_dir = BasicConfig.CHECKPOINTS_ROOT + '/'

@@ -1,7 +1,7 @@
 import os
 import tensorflow as tf
 import numpy as np
-from logger import EmptyLogger
+from logger import Logger
 
 class TextClassificationCNN(object):
 
@@ -10,7 +10,7 @@ class TextClassificationCNN(object):
         if logger:
             self.logger = logger
         else:
-            self.logger = EmptyLogger()
+            self.logger = Logger()
         self.config.class_num = dataObj.class_num
         self.KERNEL_SIZE = [1,2,3,4,5]
         self.config.vocab_size = dataObj.vocab_size
@@ -20,13 +20,13 @@ class TextClassificationCNN(object):
         self.keep_prob = tf.placeholder(tf.float32, name='keep_prob')
         self.is_train = True
         self._data_process(dataObj)
+        self._build()
 
     def _data_process(self, dataObj):
         self.x_train, self.y_train, self.x_test, self.y_test,\
             self.x_val, self.y_val = dataObj.process_file(self.config.data_dir, self.config.text_length)
 
     def _build(self):
-
         with tf.device('/cpu:0'):
             embedding = tf.Variable(tf.random_uniform([self.config.vocab_size, self.config.embedding_size],
                                 -1.0, 1.0), name='embedding')
@@ -53,8 +53,8 @@ class TextClassificationCNN(object):
 
         # fc1 = tf.contrib.layers.fully_connected(gmp, self.config.hidden_dim)
         fc1 = tf.contrib.layers.fully_connected(gmp, self.config.class_num, activation_fn=None)
-        # if self.is_train:
-        #     fc1 = tf.contrib.layers.dropout(fc1, self.keep_prob)
+        if self.is_train:
+            fc1 = tf.contrib.layers.dropout(fc1, self.keep_prob)
         self.logger.info('fc1 shape {0}'.format(fc1.shape))
         self.logits = fc1
         # self.logits = tf.contrib.layers.fully_connected(fc1, self.config.class_num, activation_fn=None)
@@ -101,7 +101,6 @@ class TextClassificationCNN(object):
 
     def train(self, sess):
         self.is_train = True
-        self._build()
         if not os.path.exists(os.path.dirname(self.config.checkpoints_dir)):
             os.mkdir(os.path.dirname(self.config.checkpoints_dir))
         if not os.path.exists(self.config.checkpoints_dir):
@@ -141,21 +140,18 @@ class TextClassificationCNN(object):
                                      .format(epoch, i, loss, accuracy, a, b, c))
                 if (epoch+1) % 6 == 0:
                     saver.save(sess, self.config.model_dir, global_step= epoch)
+                    self.logger.info('start evaluating epoch {0}...'.format(epoch))
+                    self.evaluate(sess)
         except KeyboardInterrupt:
             self.logger.error('Interrupt manually, try saving checkpoint for now...')
             print self.config.model_dir
             saver.save(sess, self.config.model_dir, global_step = epoch)
             self.logger.info('Last epoch were saved, next time will start from epoch {0}.'.format(epoch))
+            self.logger.info('start evaluating epoch {0}...'.format(epoch))
+            self.evaluate(sess)
 
     def evaluate(self, sess):
         self.is_train = False
-        self._build()
-        saver = tf.train.Saver(tf.global_variables())
-        sess.run(tf.global_variables_initializer())
-        checkpoint = tf.train.latest_checkpoint(self.config.checkpoints_dir)
-        self.logger.info('restore from checkpoint {0}'.format(checkpoint))
-        saver.restore(sess, checkpoint)
-
         iterations = len(self.x_val) // self.config.batch_size
         self.logger.info('total iterations: {0}'.format(iterations))
         random_indices = np.random.permutation(np.arange(len(self.x_val)))
@@ -174,7 +170,9 @@ class TextClassificationCNN(object):
                             feed_dict={
                                 self.input_x: x_val,
                                 self.input_y: y_val,
-                                self.thre: self.config.threshold})
+                                self.thre: self.config.threshold,
+                                self.keep_prob: self.config.keep_prob
+                            })
             total_loss += loss
             total_accuracy += accuracy
             total_precision += precision
@@ -186,6 +184,8 @@ class TextClassificationCNN(object):
 
     def predict(self,sess, input_x):
         self.is_train = False
+        self.config.batch_size = 1
+        self._build()
         saver = tf.train.Saver(tf.global_variables())
         sess.run(tf.global_variables_initializer())
         checkpoint = tf.train.latest_checkpoint(self.config.checkpoints_dir)
@@ -193,4 +193,5 @@ class TextClassificationCNN(object):
         saver.restore(sess, checkpoint)
         predict_y = sess.run(self.predict_y,feed_dict={self.input_x: input_x, self.thre: self.config.threshold})
         self.logger.info('prediction finished...')
+        return predict_y
 

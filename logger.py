@@ -1,4 +1,6 @@
 import os
+import datetime
+import time
 
 from config import BasicConfig
 from warnings import warn
@@ -21,23 +23,29 @@ class Logger(object):
         :param msg: (String) message to save
         :return: None
         '''
+        t = (datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
         if BasicConfig.LOG_LEVLE >= 2:
             print('[INFO] ' + msg)
+            self.log_file.write(str(t) + ' [INFO] ' + msg + '\n')
 
     def warning(self, msg):
         '''
         :param msg: (String) warning message
         :return: None
         '''
+        t = (datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
         if BasicConfig.LOG_LEVLE >= 1:
             warn('[WARNING] ' + msg)
+            self.log_file.write(str(t) + ' [WARNING] ' + msg + '\n')
 
     def error(self, msg):
         '''
         :param msg: (String) error message
         :return: None
         '''
+        t = (datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
         warn('[ERROR]' + msg)
+        self.log_file.write(str(t) + '[ERROR] ' + msg + '\n')
 
 class EmptyLogger(Logger):
     '''
