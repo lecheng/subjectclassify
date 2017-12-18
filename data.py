@@ -7,7 +7,7 @@ import re, io, os
 class Subject:
     def __init__(self):
         self.class_num = 783
-        self.vocab_size = 10007
+        self.vocab_size = 50176
 
     def get_label_dict(self, path='data/subject_node.txt'):
         label_dict = []
@@ -67,7 +67,7 @@ class Subject:
         f_test.close()
         f_val.close()
 
-    def build_vocal(self, data, vocab_size=10000):
+    def build_vocal(self, data, vocab_size=50000):
         data = list(data['abstract'])
         print 'total valid text num: {0}'.format(len(data))
         all_data = []
