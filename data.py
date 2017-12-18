@@ -6,8 +6,8 @@ import re, io, os
 
 class Subject:
     def __init__(self):
-        self.class_num = 2429
-        self.vocab_size = 100292
+        self.class_num = 783
+        self.vocab_size = 100678
 
     def get_label_dict(self, path='data/subject_node.txt'):
         label_dict = []
@@ -216,7 +216,7 @@ if __name__ == '__main__':
                         'Microbiology', 'Molecular biology', 'Neuroscience', 'Physiology', 'Plant sciences',
                         'Psychology', 'Stem cells', 'Structural biology', 'Systems biology', 'Zoology']
 
-    data = obj.get_valid_data('data/paper.csv',biology_subjects)
+    data = obj.get_valid_data('data/paper.csv',['Oncology'])
     obj.build_vocal(data)
     obj.save_valid_data(data)
     # dataObj = Eurlex()
