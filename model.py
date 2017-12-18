@@ -38,7 +38,7 @@ class TextClassificationCNN(object):
         maxpooling_outputs = []
         for kernel_size in self.KERNEL_SIZE:
             conv_name = 'conv'+str(kernel_size)
-            conv = tf.layers.conv1d(embeded, self.config.filters_num, kernel_size, padding='same', activation=None, name=conv_name)
+            conv = tf.layers.conv1d(embeded, self.config.filters_num, kernel_size, padding='same', activation=tf.nn.tanh, name=conv_name)
 
             pool_size = self.config.text_length / self.config.features_each_filter
             maxpooling = tf.layers.max_pooling1d(conv, pool_size, pool_size)
