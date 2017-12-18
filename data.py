@@ -57,9 +57,9 @@ class Subject:
             abstract = self.remove_html_tag(abstract)
             label = labels[i]
             label = label[1:-1].replace("\"", "")
-            if i < 2000:
+            if i < 1000:
                 f_test.writelines(label + '\t' + abstract + '\n')
-            elif i < 4000:
+            elif i < 1000:
                 f_val.writelines(label + '\t' + abstract + '\n')
             else:
                 f_train.writelines(label + '\t' + abstract + '\n')
