@@ -26,7 +26,7 @@ class TCCNNConfig(object):
     embedding_size = 100
     class_num = 1771
     vocab_size = 100000
-    epochs = 12
+    epochs = 120
     filters_num = 64
     features_each_filter = 10
     hidden_dim = 128
