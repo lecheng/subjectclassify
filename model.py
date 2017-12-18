@@ -3,6 +3,9 @@ import tensorflow as tf
 import numpy as np
 from logger import Logger
 
+biology_subjects = ['Biochemistry','Biological techniques','Biophysics','Biotechnology','Cancer','Cell biology','Chemical biology','Computational biology and bioinformatics','Developmental biology','Drug discovery','Ecology','Evolution','Genetics','Immunology','Microbiology','Molecular biology','Neuroscience','Physiology','Plant sciences','Psychology','Stem cells','Structural biology','Systems biology','Zoology']
+
+
 class TextClassificationCNN(object):
 
     def __init__(self, config, dataObj, logger=None):
@@ -24,7 +27,7 @@ class TextClassificationCNN(object):
 
     def _data_process(self, dataObj):
         self.x_train, self.y_train, self.x_test, self.y_test,\
-            self.x_val, self.y_val = dataObj.process_file(self.config.data_dir, self.config.text_length, 'Oncology')
+            self.x_val, self.y_val = dataObj.process_file(self.config.data_dir, self.config.text_length, biology_subjects)
 
     def _build(self):
         with tf.device('/cpu:0'):
