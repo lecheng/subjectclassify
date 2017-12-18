@@ -155,8 +155,6 @@ class TextClassificationCNN(object):
 
     def evaluate(self, sess):
         self.is_train = False
-        self.x_val = self.x_train[:4000]
-        self.y_val = self.y_train[:4000]
         iterations = len(self.x_val) // self.config.batch_size
         self.logger.info('total iterations: {0}'.format(iterations))
         random_indices = np.random.permutation(np.arange(len(self.x_val)))
