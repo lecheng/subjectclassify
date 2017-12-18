@@ -24,7 +24,7 @@ class TextClassificationCNN(object):
 
     def _data_process(self, dataObj):
         self.x_train, self.y_train, self.x_test, self.y_test,\
-            self.x_val, self.y_val = dataObj.process_file(self.config.data_dir, self.config.text_length)
+            self.x_val, self.y_val = dataObj.process_file(self.config.data_dir, self.config.text_length, 'Oncology')
 
     def _build(self):
         with tf.device('/cpu:0'):
@@ -152,6 +152,8 @@ class TextClassificationCNN(object):
 
     def evaluate(self, sess):
         self.is_train = False
+        self.x_val = self.x_train[:4000]
+        self.y_val = self.y_train[:4000]
         iterations = len(self.x_val) // self.config.batch_size
         self.logger.info('total iterations: {0}'.format(iterations))
         random_indices = np.random.permutation(np.arange(len(self.x_val)))

@@ -6,8 +6,8 @@ import re, io, os
 
 class Subject:
     def __init__(self):
-        self.class_num = 1771
-        self.vocab_size = 100266
+        self.class_num = 783
+        self.vocab_size = 10007
 
     def get_label_dict(self, path='data/subject_node.txt'):
         label_dict = []
@@ -19,10 +19,24 @@ class Subject:
         cat_to_id = dict(zip(label_dict, range(len(label_dict))))
         return label_dict, cat_to_id
 
-    def get_valid_data(self, path):
+    def label_count(self, path, subject = None):
+        dataobj = self.get_valid_data(path, subject)
+        obj_labels = list(dataobj['labels'])
+        labels = []
+        for label in obj_labels:
+            label = label[1:-1].replace('\"', '').split(',')
+            labels += label
+        label_count = Counter(labels)
+        cat_to_id = dict(zip(label_count, range(len(label_count))))
+        print('total label number: {0}'.format(len(label_count)))
+        return label_count, cat_to_id
+
+    def get_valid_data(self, path, subject = None):
         data = pd.read_csv(path, encoding='utf-8')
         mask = (data['labels'].str.len() > 2) & (data['abstract'].str.len() > 20)
         data = data.loc[mask]
+        if subject is not None:
+            data = data[data['subject'] == subject]
         return data
 
     def remove_html_tag(self, abstract):
@@ -43,9 +57,9 @@ class Subject:
             abstract = self.remove_html_tag(abstract)
             label = labels[i]
             label = label[1:-1].replace("\"", "")
-            if i < 4000:
+            if i < 1000:
                 f_test.writelines(label + '\t' + abstract + '\n')
-            elif i < 8000:
+            elif i < 1000:
                 f_val.writelines(label + '\t' + abstract + '\n')
             else:
                 f_train.writelines(label + '\t' + abstract + '\n')
@@ -53,9 +67,9 @@ class Subject:
         f_test.close()
         f_val.close()
 
-    def build_vocal(self, data, vocab_size=100000):
+    def build_vocal(self, data, vocab_size=10000):
         data = list(data['abstract'])
-        print len(data)
+        print 'total valid text num: {0}'.format(len(data))
         all_data = []
         for content in data:
             if content:
@@ -63,10 +77,10 @@ class Subject:
                 content = re.sub('[().,;:]', '', content)
                 words = content.split(' ')
                 all_data.extend(words)
-        print len(all_data)
+        print 'total words in abstracts: {0}'.format(len(all_data))
 
         counter = Counter(all_data)
-        print len(counter)
+        print 'total unique words in abstrats: {0}'.format(len(counter))
         count_pairs = counter.most_common(vocab_size - 1)
         words, _ = list(zip(*count_pairs))
         # add a tag <PAD> to make all the text the same length
@@ -133,7 +147,7 @@ class Subject:
 
         return words, word_to_id
 
-    def process_file(self, data_path='data/', seq_length=100):
+    def process_file(self, data_path='data/', seq_length=100, subject = None):
         """
         :param data_path: data file path
         :param seq_length: max length of file
@@ -141,8 +155,10 @@ class Subject:
         """
         words, word_to_id = self.read_vocab(os.path.join(data_path,
                                                          'vocab.txt'))
-        _, cat_to_id = self.get_label_dict(os.path.join(data_path,
-                                                         'subject_node.txt'))
+        # _, cat_to_id = self.get_label_dict(os.path.join(data_path,
+        #                                                  'subject_node.txt'))
+        _, cat_to_id = self.label_count(os.path.join(data_path,
+                                                         'paper.csv'), subject)
         x_train, y_train = self.file_to_ids(os.path.join(data_path,
                                                          'train.txt'), word_to_id, cat_to_id, seq_length)
         x_test, y_test = self.file_to_ids(os.path.join(data_path,
@@ -194,8 +210,7 @@ class Eurlex:
 
 if __name__ == '__main__':
     obj = Subject()
-    print len(obj.get_label_dict('data/subject_node.txt'))
-    data = obj.get_valid_data('data/paper.csv')
+    data = obj.get_valid_data('data/paper.csv','Oncology')
     obj.build_vocal(data)
     obj.save_valid_data(data)
     # dataObj = Eurlex()
