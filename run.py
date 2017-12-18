@@ -9,6 +9,11 @@ def run_cnnclassify(is_train=True):
     if is_train:
         model.train(sess)
     else:
+        saver = tf.train.Saver(tf.global_variables())
+        sess.run(tf.global_variables_initializer())
+        checkpoint = tf.train.latest_checkpoint(TCCNNConfig.checkpoints_dir)
+        if checkpoint:
+            saver.restore(sess, checkpoint)
         model.evaluate(sess)
     sess.close()
 
