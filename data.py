@@ -6,8 +6,8 @@ import re, io, os
 
 class Subject:
     def __init__(self):
-        self.class_num = 783
-        self.vocab_size = 50176
+        self.class_num = 2429
+        self.vocab_size = 100292
 
     def get_label_dict(self, path='data/subject_node.txt'):
         label_dict = []
@@ -36,7 +36,7 @@ class Subject:
         mask = (data['labels'].str.len() > 2) & (data['abstract'].str.len() > 20)
         data = data.loc[mask]
         if subject is not None:
-            data = data[data['subject'] == subject]
+            data = data[data['subject'].isin(subject)]
         return data
 
     def remove_html_tag(self, abstract):
@@ -57,9 +57,9 @@ class Subject:
             abstract = self.remove_html_tag(abstract)
             label = labels[i]
             label = label[1:-1].replace("\"", "")
-            if i < 1000:
+            if i < 2000:
                 f_test.writelines(label + '\t' + abstract + '\n')
-            elif i < 1000:
+            elif i < 4000:
                 f_val.writelines(label + '\t' + abstract + '\n')
             else:
                 f_train.writelines(label + '\t' + abstract + '\n')
@@ -67,7 +67,7 @@ class Subject:
         f_test.close()
         f_val.close()
 
-    def build_vocal(self, data, vocab_size=50000):
+    def build_vocal(self, data, vocab_size=100000):
         data = list(data['abstract'])
         print 'total valid text num: {0}'.format(len(data))
         all_data = []
@@ -210,7 +210,13 @@ class Eurlex:
 
 if __name__ == '__main__':
     obj = Subject()
-    data = obj.get_valid_data('data/paper.csv','Oncology')
+    biology_subjects = ['Biochemistry', 'Biological techniques', 'Biophysics', 'Biotechnology', 'Cancer',
+                        'Cell biology', 'Chemical biology', 'Computational biology and bioinformatics',
+                        'Developmental biology', 'Drug discovery', 'Ecology', 'Evolution', 'Genetics', 'Immunology',
+                        'Microbiology', 'Molecular biology', 'Neuroscience', 'Physiology', 'Plant sciences',
+                        'Psychology', 'Stem cells', 'Structural biology', 'Systems biology', 'Zoology']
+
+    data = obj.get_valid_data('data/paper.csv',biology_subjects)
     obj.build_vocal(data)
     obj.save_valid_data(data)
     # dataObj = Eurlex()
