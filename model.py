@@ -21,24 +21,26 @@ class TextClassificationCNN(object):
         self.input_y = tf.placeholder(tf.int32, [None, self.config.class_num], name='input_y')
         self.thre = tf.placeholder(tf.float32, name='threshold')
         self.keep_prob = tf.placeholder(tf.float32, name='keep_prob')
+        self.embedding = tf.Variable(tf.random_uniform([self.config.vocab_size, self.config.embedding_size],
+                                    -1.0, 1.0), name='embedding', trainable=False)
+        self.embedding_placeholder = tf.placeholder(tf.float32, [self.config.vocab_size, self.config.embedding_size])
+        self.embedding_init = self.embedding.assign(self.embedding_placeholder)
         self.is_train = True
         self._data_process(dataObj)
         self._build()
 
     def _data_process(self, dataObj):
         self.x_train, self.y_train, self.x_test, self.y_test,\
-            self.x_val, self.y_val = dataObj.process_file(self.config.data_dir, self.config.text_length, ['Oncology'])
+            self.x_val, self.y_val = dataObj.process_file(self.config.data_dir, self.config.text_length, biology_subjects)
 
     def _build(self):
         with tf.device('/cpu:0'):
-            embedding = tf.Variable(tf.random_uniform([self.config.vocab_size, self.config.embedding_size],
-                                -1.0, 1.0), name='embedding')
-            embeded = tf.nn.embedding_lookup(embedding, self.input_x)
+            embeded = tf.nn.embedding_lookup(self.embedding, self.input_x)
         self.logger.info('embeded shape {0}'.format(embeded.shape))
         maxpooling_outputs = []
         for kernel_size in self.KERNEL_SIZE:
             conv_name = 'conv'+str(kernel_size)
-            conv = tf.layers.conv1d(embeded, self.config.filters_num, kernel_size, padding='same', activation=tf.nn.tanh, name=conv_name)
+            conv = tf.layers.conv1d(embeded, self.config.filters_num, kernel_size, padding='same', activation=tf.nn.relu, name=conv_name)
 
             pool_size = self.config.text_length / self.config.features_each_filter
             maxpooling = tf.layers.max_pooling1d(conv, pool_size, pool_size)
@@ -55,12 +57,12 @@ class TextClassificationCNN(object):
         self.logger.info('gmp shape {0}'.format(gmp.shape))
 
         # fc1 = tf.contrib.layers.fully_connected(gmp, self.config.hidden_dim)
-        fc1 = tf.contrib.layers.fully_connected(gmp, self.config.class_num, activation_fn=None)
+        fc1 = tf.contrib.layers.fully_connected(gmp, self.config.hidden_dim, activation_fn=None)
         if self.is_train:
             fc1 = tf.contrib.layers.dropout(fc1, self.keep_prob)
         self.logger.info('fc1 shape {0}'.format(fc1.shape))
-        self.logits = fc1
-        # self.logits = tf.contrib.layers.fully_connected(fc1, self.config.class_num, activation_fn=None)
+        # self.logits = fc1
+        self.logits = tf.contrib.layers.fully_connected(fc1, self.config.class_num, activation_fn=None)
         self.logger.info('logits shape {0}'.format(self.logits.shape))
         # self.predict_y = tf.argmax(self.logits,1,output_type=tf.int32)
         # self.predict_y = tf.round(tf.nn.sigmoid(self.logits))

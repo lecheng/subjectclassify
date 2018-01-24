@@ -2,12 +2,14 @@ import pandas as pd
 import numpy as np
 from collections import Counter
 import tensorflow.contrib.keras as kr
-import re, io, os
+import re, io, os, nltk
 
 class Subject:
     def __init__(self):
-        self.class_num = 783
-        self.vocab_size = 100678
+        # self.class_num = 783
+        # self.vocab_size = 41956
+        self.class_num = 2429
+        self.vocab_size = 65537
 
     def get_label_dict(self, path='data/subject_node.txt'):
         label_dict = []
@@ -47,35 +49,46 @@ class Subject:
         train_path = 'data/train.txt'
         test_path = 'data/test.txt'
         val_path = 'data/val.txt'
+        words_path = 'data/words.txt'
         f_train = io.open(train_path, 'w')
         f_test = io.open(test_path, 'w')
         f_val = io.open(val_path, 'w')
+        f = io.open(words_path, 'w')
         abstracts = list(data['abstract'])
         labels = list(data['labels'])
+        random_indices = np.random.permutation(np.arange(len(data)))
+        abstracts = np.array(abstracts)[random_indices]
+        labels = np.array(labels)[random_indices]
+
         for i in range(0, len(data)):
             abstract = abstracts[i]
             abstract = self.remove_html_tag(abstract)
             label = labels[i]
             label = label[1:-1].replace("\"", "")
-            if i < 1000:
-                f_test.writelines(label + '\t' + abstract + '\n')
-            elif i < 1000:
-                f_val.writelines(label + '\t' + abstract + '\n')
-            else:
-                f_train.writelines(label + '\t' + abstract + '\n')
+            content = re.sub('[().,;:]', ' ', abstract)
+            words = nltk.word_tokenize(content.lower())
+            sentence = ' '.join(words);
+            if sentence:
+                f.writelines(sentence+'\n')
+                if i < 256:
+                    f_test.writelines(label + '\t' + abstract + '\n')
+                elif i < 512:
+                    f_val.writelines(label + '\t' + abstract + '\n')
+                else:
+                    f_train.writelines(label + '\t' + abstract + '\n')
         f_train.close()
         f_test.close()
         f_val.close()
 
-    def build_vocal(self, data, vocab_size=100000):
+    def build_vocal(self, data, vocab_size=80000):
         data = list(data['abstract'])
         print 'total valid text num: {0}'.format(len(data))
         all_data = []
         for content in data:
             if content:
                 content = self.remove_html_tag(content)
-                content = re.sub('[().,;:]', '', content)
-                words = content.split(' ')
+                content = re.sub('[().,;:]', ' ', content)
+                words = nltk.word_tokenize(content.lower())
                 all_data.extend(words)
         print 'total words in abstracts: {0}'.format(len(all_data))
 
@@ -94,6 +107,8 @@ class Subject:
         # print(len(vocab))
         io.open('data/vocab.txt', 'w').write('\n'.join(words))
 
+    def tokenize(self, content):
+        pass
 
     def read_file(self, filename):
         """
@@ -141,7 +156,7 @@ class Subject:
         :param filename: file name
         :return: words vocaburary and word to id dictionary
         """
-        words = list(map(lambda line: line.strip(),
+        words = list(map(lambda line: line.strip().split(' ')[0],
                     io.open(filename, 'r', encoding='utf-8').readlines()))
         word_to_id = dict(zip(words, range(len(words))))
 
@@ -211,13 +226,14 @@ class Eurlex:
 if __name__ == '__main__':
     obj = Subject()
     biology_subjects = ['Biochemistry', 'Biological techniques', 'Biophysics', 'Biotechnology', 'Cancer',
-                        'Cell biology', 'Chemical biology', 'Computational biology and bioinformatics',
-                        'Developmental biology', 'Drug discovery', 'Ecology', 'Evolution', 'Genetics', 'Immunology',
-                        'Microbiology', 'Molecular biology', 'Neuroscience', 'Physiology', 'Plant sciences',
-                        'Psychology', 'Stem cells', 'Structural biology', 'Systems biology', 'Zoology']
+                         'Cell biology', 'Chemical biology', 'Computational biology and bioinformatics',
+                         'Developmental biology', 'Drug discovery', 'Ecology', 'Evolution', 'Genetics', 'Immunology',
+                         'Microbiology', 'Molecular biology', 'Neuroscience', 'Physiology', 'Plant sciences',
+                         'Psychology', 'Stem cells', 'Structural biology', 'Systems biology', 'Zoology']
 
-    data = obj.get_valid_data('data/paper.csv',['Oncology'])
-    obj.build_vocal(data)
+    # data = obj.get_valid_data('data/paper.csv',['Oncology'])
+    data = obj.get_valid_data('data/paper.csv', biology_subjects)
+    # obj.build_vocal(data)
     obj.save_valid_data(data)
     # dataObj = Eurlex()
     # x_train, y_train, x_test, y_test, x_val, y_val = dataObj.process_file()
